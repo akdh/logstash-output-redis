@@ -21,13 +21,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   default :codec, "json"
 
   # Name is used for logging in case there are multiple instances.
+  # TODO: delete
   config :name, :validate => :string, :default => 'default',
     :deprecated => true
 
   # The hostname(s) of your Redis server(s). Ports may be specified on any
   # hostname, which will override the global port config.
-  # If the hosts list is an array, Logstash will pick one random host to connect to,
-  # if that host is disconnected it will then pick another.
   #
   # For example:
   # [source,ruby]
@@ -53,14 +52,23 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   # The name of the Redis queue (we'll use RPUSH on this). Dynamic names are
   # valid here, for example `logstash-%{type}`
+  # TODO: delete
   config :queue, :validate => :string, :deprecated => true
 
   # The name of a Redis list or channel. Dynamic names are
   # valid here, for example `logstash-%{type}`.
+  # TODO set required true
   config :key, :validate => :string, :required => false
+
+  config :value, :validate => :string, :required => false
+
+  config :length, :validate => :number, :default => 5
+
+  config :expire :validate => :number, :default => 604800
 
   # Either list or channel.  If `redis_type` is list, then we will set
   # RPUSH to key. If `redis_type` is channel, then we will PUBLISH to `key`.
+  # TODO set required true
   config :data_type, :validate => [ "list", "channel" ], :required => false
 
   # Set to true if you want Redis to batch up values and send 1 RPUSH command
@@ -230,6 +238,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def send_to_redis(event, payload)
     # How can I do this sort of thing with codecs?
     key = event.sprintf(@key)
+    value = event.sprintf(@value)
 
     if @batch && @data_type == 'list' # Don't use batched method for pubsub.
       # Stud::Buffer
@@ -241,7 +250,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       @redis ||= connect
       if @data_type == 'list'
         congestion_check(key)
-        @redis.rpush(key, payload)
+        @redis.lpush(key, value)
+        @redis.ltrim(key, 0, @length)
+        @redis.expire(key, @expire)
       else
         @redis.publish(key, payload)
       end
