@@ -12,11 +12,11 @@ require "stud/buffer"
 #
 # For more information, see http://redis.io/[the Redis homepage]
 #
-class LogStash::Outputs::Redis < LogStash::Outputs::Base
+class LogStash::Outputs::RedisList < LogStash::Outputs::Base
 
   include Stud::Buffer
 
-  config_name "redis"
+  config_name "redislist"
 
   default :codec, "json"
 
@@ -64,7 +64,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   config :length, :validate => :number, :default => 5
 
-  config :expire :validate => :number, :default => 604800
+  config :expire, :validate => :number, :default => 604800
 
   # Either list or channel.  If `redis_type` is list, then we will set
   # RPUSH to key. If `redis_type` is channel, then we will PUBLISH to `key`.
