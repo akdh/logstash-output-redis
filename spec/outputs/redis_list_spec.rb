@@ -1,10 +1,10 @@
 require "logstash/devutils/rspec/spec_helper"
-require "logstash/outputs/redis"
+require "logstash/outputs/redis_list"
 require "logstash/json"
 require "redis"
 require "flores/random"
 
-describe LogStash::Outputs::Redis do
+describe LogStash::Outputs::RedisList do
 
   context "integration tests", :redis => true do
     shared_examples_for "writing to redis list" do |extra_config|
@@ -87,6 +87,7 @@ describe LogStash::Outputs::Redis do
         "data_type" => "list",
         "batch" => true,
         "batch_events" => 50,
+        "length" => 25
        }
     }
     let(:redis) { described_class.new(config) }
