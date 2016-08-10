@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
 
-  s.name            = 'logstash-output-redis_list'
+  s.name            = 'recent-redis-list'
   s.version         = '0.0.1'
   s.licenses        = ['Apache License (2.0)']
   s.summary         = "This output will send events to a Redis queue using LPUSH and LTRIM"
