@@ -12,11 +12,11 @@ require "stud/buffer"
 #
 # For more information, see http://redis.io/[the Redis homepage]
 #
-class LogStash::Outputs::Redis < LogStash::Outputs::Base
+class LogStash::Outputs::RedisList < LogStash::Outputs::Base
 
   include Stud::Buffer
 
-  config_name "redis"
+  config_name "redis_list"
 
   default :codec, "json"
 
@@ -59,6 +59,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # valid here, for example `logstash-%{type}`.
   # TODO set required true
   config :key, :validate => :string, :required => false
+
+  config :value, :validate => :string, :required => false
+
+  config :length, :validate => :number, :default => 5
+
+  config :expire, :validate => :number, :default => 604800
 
   # Either list or channel.  If `redis_type` is list, then we will set
   # RPUSH to key. If `redis_type` is channel, then we will PUBLISH to `key`.
@@ -232,6 +238,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def send_to_redis(event, payload)
     # How can I do this sort of thing with codecs?
     key = event.sprintf(@key)
+    value = event.sprintf(@value)
 
     if @batch && @data_type == 'list' # Don't use batched method for pubsub.
       # Stud::Buffer
@@ -243,7 +250,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       @redis ||= connect
       if @data_type == 'list'
         congestion_check(key)
-        @redis.rpush(key, payload)
+        @redis.lpush(key, value)
+        @redis.ltrim(key, 0, @length)
+        @redis.expire(key, @expire)
       else
         @redis.publish(key, payload)
       end

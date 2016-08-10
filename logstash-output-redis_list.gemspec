@@ -1,13 +1,11 @@
 Gem::Specification.new do |s|
 
-  s.name            = 'logstash-output-redis'
-  s.version         = '2.0.5'
+  s.name            = 'logstash-output-redis_list'
+  s.version         = '0.0.1'
   s.licenses        = ['Apache License (2.0)']
-  s.summary         = "This output will send events to a Redis queue using RPUSH"
+  s.summary         = "This output will send events to a Redis queue using LPUSH and LTRIM"
   s.description     = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/plugin install gemname. This gem is not a stand-alone program"
-  s.authors         = ["Elastic"]
-  s.email           = 'info@elastic.co'
-  s.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
+  s.authors         = ["Elastic", "akdh"]
   s.require_paths = ["lib"]
 
   # Files
